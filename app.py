@@ -5,22 +5,10 @@ import pickle
 import os
 from tensorflow.keras.models import load_model
 
-# -------------------------------
-# Load all files safely
-# -------------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-def load_pickle(filename):
-    path = os.path.join(BASE_DIR, filename)
-    with open(path, "rb") as f:
-        return pickle.load(f)
-
-# Load model and preprocessing objects
-model = load_model(os.path.join(BASE_DIR, "model.keras"))
-scaler = load_pickle("scaler.pkl")
-gender_encoder = load_pickle("gender_label_encoder.pkl")
-ohe_geo = load_pickle("ohe.pkl")
-
+scaler = pickle.load(open("scaler.pkl","rb"))
+ohe = pickle.load(open("ohe.pkl","rb"))
+gender_encoder = pickle.load(open("gender_label_encoder.pkl","rb"))
+model = load_model("model.keras")
 # -------------------------------
 # Preprocessing function
 # -------------------------------
@@ -93,3 +81,4 @@ if st.button("Predict Churn"):
         st.error(f"❌ High Churn Probability: {result:.2f}")
     else:
         st.success(f"✔ Customer Likely to Stay: {result:.2f}")
+
