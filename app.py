@@ -1,67 +1,57 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
+import numpy as np
 import pickle
-import os
 from tensorflow.keras.models import load_model
 
-scaler = pickle.load(open("scaler.pkl","rb"))
-ohe = pickle.load(open("ohe.pkl","rb"))
-gender_encoder = pickle.load(open("gender_label_encoder.pkl","rb"))
+# ---------------------------------------------------------
+# Load saved models
+# ---------------------------------------------------------
 model = load_model("model.keras")
-# -------------------------------
-# Preprocessing function
-# -------------------------------
-def preprocess_input(data):
 
-    # 1️⃣ Label Encode Gender
-    data["Gender"] = gender_encoder.transform([data["Gender"]])[0]
+with open("gender_label_encoder.pkl", "rb") as file:
+    gender_encoder = pickle.load(file)
 
-    # 2️⃣ One Hot Encode Geography
-    geo_ohe = ohe_geo.transform([[data["Geography"]]])
-    geo_df = pd.DataFrame(geo_ohe, columns=ohe_geo.get_feature_names_out())
+with open("ohe.pkl", "rb") as file:
+    ohe = pickle.load(file)
 
-    # 3️⃣ Numerical data
-    num_features = ["CreditScore", "Age", "Tenure", "Balance",
-                    "NumOfProducts", "HasCrCard", "IsActiveMember", "EstimatedSalary"]
+with open("scaler.pkl", "rb") as file:
+    scaler = pickle.load(file)
 
-    num_data = pd.DataFrame([[data[f] for f in num_features]], columns=num_features)
-    num_scaled = scaler.transform(num_data)
-    num_df = pd.DataFrame(num_scaled, columns=num_features)
-
-    # 4️⃣ Concatenate all features
-    final_df = pd.concat([geo_df, num_df], axis=1)
-
-    return final_df
-
-
-# -------------------------------
-# Prediction Function
-# -------------------------------
-def predict_churn(input_data):
-    processed = preprocess_input(input_data)
-    pred = model.predict(processed)[0][0]
-    return float(pred)
-
-
-# -------------------------------
+# ---------------------------------------------------------
 # Streamlit UI
-# -------------------------------
-st.title("🏦 Customer Churn Prediction (ANN Model)")
+# ---------------------------------------------------------
+st.set_page_config(page_title="Customer Churn Prediction", page_icon="🔮", layout="centered")
 
-CreditScore = st.number_input("Credit Score", 300, 900, 650)
-Geography = st.selectbox("Geography", ["France", "Germany", "Spain"])
-Gender = st.selectbox("Gender", ["Male", "Female"])
-Age = st.number_input("Age", 18, 92, 35)
-Tenure = st.number_input("Tenure (Years)", 0, 10, 3)
-Balance = st.number_input("Balance", 0.0, 250000.0, 50000.0)
-NumOfProducts = st.number_input("Number of Products", 1, 4, 1)
-HasCrCard = st.selectbox("Has Credit Card", [1, 0])
-IsActiveMember = st.selectbox("Is Active Member", [1, 0])
-EstimatedSalary = st.number_input("Estimated Salary", 0.0, 200000.0, 50000.0)
+st.title("🔮 Customer Churn Prediction App")
+st.write("Enter customer details below, and the ANN model will predict whether the customer is likely to churn.")
 
-if st.button("Predict Churn"):
-    test_input = {
+# ---------------------------------------------------------
+# User Inputs
+# ---------------------------------------------------------
+col1, col2 = st.columns(2)
+
+with col1:
+    CreditScore = st.number_input("Credit Score", min_value=300, max_value=900, value=600)
+    Gender = st.selectbox("Gender", ["Male", "Female"])
+    Age = st.number_input("Age", min_value=18, max_value=92, value=40)
+    Balance = st.number_input("Account Balance", min_value=0.0, value=60000.0)
+
+with col2:
+    Geography = st.selectbox("Geography", ["France", "Spain", "Germany"])
+    Tenure = st.number_input("Tenure (Years)", min_value=0, max_value=10, value=3)
+    NumOfProducts = st.number_input("Number of Products", min_value=1, max_value=4, value=2)
+    EstimatedSalary = st.number_input("Estimated Salary", min_value=0.0, value=50000.0)
+
+HasCrCard = st.selectbox("Has Credit Card?", [0, 1])
+IsActiveMember = st.selectbox("Is Active Member?", [0, 1])
+
+
+# ---------------------------------------------------------
+# Prepare input for model
+# ---------------------------------------------------------
+def preprocess_input():
+    input_data = {
         "CreditScore": CreditScore,
         "Geography": Geography,
         "Gender": Gender,
@@ -74,11 +64,44 @@ if st.button("Predict Churn"):
         "EstimatedSalary": EstimatedSalary
     }
 
-    result = predict_churn(test_input)
+    input_df = pd.DataFrame([input_data])
 
-    st.subheader("🔍 Result")
-    if result > 0.5:
-        st.error(f"❌ High Churn Probability: {result:.2f}")
-    else:
-        st.success(f"✔ Customer Likely to Stay: {result:.2f}")
+    # Encode Gender
+    input_df["Gender"] = gender_encoder.transform(input_df["Gender"])
 
+    # One-hot encode Geography
+    geo_encoded = ohe.transform(input_df[["Geography"]])
+    geo_df = pd.DataFrame(
+        geo_encoded,
+        columns=ohe.get_feature_names_out(["Geography"])
+    )
+
+    # Combine with original df
+    input_df = pd.concat([input_df.drop(columns=["Geography"]), geo_df], axis=1)
+
+    # Scale
+    scaled = scaler.transform(input_df)
+
+    return scaled
+
+
+# ---------------------------------------------------------
+# Predict Button
+# ---------------------------------------------------------
+if st.button("Predict Churn"):
+    try:
+        processed = preprocess_input()
+        prediction = model.predict(processed)[0][0]
+        churn = prediction > 0.5
+
+        st.subheader("🔍 Prediction Result")
+
+        st.write(f"**Churn Probability:** `{prediction:.4f}`")
+
+        if churn:
+            st.error("🚨 The customer is likely to CHURN.")
+        else:
+            st.success("🟩 The customer is NOT likely to churn.")
+
+    except Exception as e:
+        st.error(f"Error: {e}")
