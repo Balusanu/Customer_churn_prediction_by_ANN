@@ -1,104 +1,156 @@
-# **Customer Churn Prediction – ANN Model (Streamlit Web App)**
+# 🌟 **Customer Churn Prediction using Artificial Neural Networks**
 
-This project is an interactive **Streamlit web application** that predicts customer churn using a trained Artificial Neural Network (ANN).
-The model is built using **TensorFlow/Keras**, and the UI is built using **Streamlit**.
+A complete end-to-end **Deep Learning project** that predicts whether a bank customer is likely to churn, built using **TensorFlow**, **Streamlit**, and **Scikit-Learn**.
+
+This repository includes:
+
+* Data preprocessing
+* ANN model training
+* Saving encoders and scalers
+* Full inference pipeline
+* A clean, production-ready Streamlit web app
 
 ---
 
-## 📦 **Project Structure**
+## 📌 **1. Project Overview**
+
+Customer churn is a critical challenge for businesses. Predicting *which* customers may leave allows teams to take proactive retention action.
+
+This project uses an **Artificial Neural Network (ANN)** to classify whether a customer will churn based on features such as credit score, age, geography, account balance, and more.
+
+The Streamlit app lets you input customer attributes and instantly receive a churn prediction powered by the trained ANN.
+
+---
+
+## 📊 **2. Dataset**
+
+The project uses the **Churn_Modelling.csv** dataset, containing 10,000 customer records with:
+
+* Credit score
+* Geography
+* Gender
+* Age
+* Tenure
+* Balance
+* Number of products
+* Credit card status
+* Active member status
+* Estimated salary
+* Churn (target)
+
+---
+
+## 🧹 **3. Data Preprocessing Pipeline**
+
+Applied transformations include:
+
+### ✔ Dropping unnecessary columns
+
+* `RowNumber`, `CustomerId`, `Surname`
+
+### ✔ Encoding
+
+* **LabelEncoder** → Gender
+* **OneHotEncoder (with handle_unknown='ignore')** → Geography
+* Saved as:
+
+  * `gender_label_encoder.pkl`
+  * `ohe.pkl`
+
+### ✔ Scaling
+
+* **StandardScaler** used on all features
+* Saved as:
+
+  * `scaler.pkl`
+
+### ✔ Train-test split
+
+`train_test_split(test_size=0.2, random_state=42)`
+
+---
+
+## 🧠 **4. ANN Model Architecture**
+
+The neural network is built using **TensorFlow Keras**:
+
+| Layer | Units | Activation |
+| ----- | ----- | ---------- |
+| Dense | 64    | ReLU       |
+| Dense | 32    | ReLU       |
+| Dense | 1     | Sigmoid    |
+
+### Loss / Optimizer
+
+* Loss: **Binary Crossentropy**
+* Optimizer: **Adam**
+* Metrics: **Accuracy**
+
+### Training Tools
+
+* Early Stopping
+* TensorBoard Logs
+* Model saved as `model.keras`
+
+---
+
+## 🚀 **5. Streamlit App**
+
+A complete web interface that performs:
+
+* Gender encoding
+* Geography one-hot encoding (bug-free, safe implementation)
+* Scaling using saved scaler
+* ANN prediction
+* Displays churn probability and final label
+
+---
+
+## 📁 **7. Repository Structure**
 
 ```
-📁 Customer_churn_prediction_by_ANN/
+📦 Customer-Churn-ANN
 │
-├── app.py
-├── model.keras
-├── scaler.pkl
-├── gender_label_encoder.pkl
-├── ohe_geography.pkl
+├── app.py                    # Streamlit web app
+├── model.keras               # Trained ANN model
+├── scaler.pkl                # StandardScaler
+├── ohe.pkl                   # OneHotEncoder
+├── gender_label_encoder.pkl  # LabelEncoder for gender
+├── Churn_Modelling.csv       # Dataset
 ├── requirements.txt
-├── README.md
+└── README.md                 # Documentation
 ```
 
 ---
 
-## 🧠 **Model Overview**
+## 🎯 **8. Example Prediction Flow**
 
-* **Model Type:** Artificial Neural Network (ANN)
-* **Framework:** Keras / TensorFlow
-* **Layers:**
+1. User inputs customer details
+2. App encodes & scales data
+3. ANN predicts churn probability
+4. App displays:
 
-  * Dense (64 neurons, ReLU)
-  * Dense (32 neurons, ReLU)
-  * Dense (1 neuron, Sigmoid)
-* **Problem:** Binary Classification (Churn / No-Churn)
-
-Model saved as: `model.keras`
+   * Probability score
+   * Final label (“Likely to churn” / “Not likely to churn”)
 
 ---
 
-## 🛠️ **Tech Stack**
+## 📦 **9. Requirements**
 
-| Layer    | Technology                   |
-| -------- | ---------------------------- |
-| Frontend | Streamlit                    |
-| Backend  | Python                       |
-| ML Model | TensorFlow / Keras           |
-| Encoding | LabelEncoder + OneHotEncoder |
-| Scaling  | StandardScaler               |
+Key Python libraries:
 
+* tensorflow
+* streamlit
+* numpy
+* pandas
+* scikit-learn
+* pickle
 
-
-## 🧪 **Features in the App**
-
-* Dropdowns for categorical features
-* Sliders / number inputs for numerical features
-* On-click prediction
-* Clean UI
-* Model probability output
-* "Customer Will Churn / Not Churn" message
-* Optional banner image
-
----
-
-## 🧪 **Sample Input**
-
-| Field         | Example |
-| ------------- | ------- |
-| Geography     | France  |
-| Gender        | Male    |
-| Age           | 45      |
-| Credit Score  | 650     |
-| Balance       | 120000  |
-| Active Member | Yes     |
-
----
-
-## 📤 **Sample Output**
+You can install all dependencies using:
 
 ```
-Final Prediction: Customer is likely to churn ❌
-Probability: 76.4%
-```
-
-or
-
-```
-Final Prediction: Customer will NOT churn ✅
-Probability: 12.3%
+pip install -r requirements.txt
 ```
 
 ---
 
-## 📘 **Future Enhancements**
-
-* Add Explainability (SHAP)
-* Add charts & insights
-* Add CSV bulk prediction
-* Connect database for real-time data
-* Deploy with Docker
-
----
-
-## ⭐ **Support**
-
-If this project helped you, please ⭐ star the repository!
