@@ -8,7 +8,7 @@ The model is built using **TensorFlow/Keras**, and the UI is built using **Strea
 ## 📦 **Project Structure**
 
 ```
-📁 churn-app/
+📁 Customer_churn_prediction_by_ANN/
 │
 ├── app.py
 ├── model.keras
@@ -17,8 +17,6 @@ The model is built using **TensorFlow/Keras**, and the UI is built using **Strea
 ├── ohe_geography.pkl
 ├── requirements.txt
 ├── README.md
-└── images/
-      └── banner.png   (optional)
 ```
 
 ---
